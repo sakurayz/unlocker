@@ -1,0 +1,38 @@
+name: Manual Build
+
+on:
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # 选择 Linux 运行环境
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'latest'
+
+      - name: Install Dependencies
+        run: go install github.com/tc-hib/go-winres@latest
+
+      - name: Build Unlocker
+        run: |
+          cd unlocker
+          sh build.sh 4.2.7
+
+      - name: Archive Binary
+        run: |
+          mkdir -p artifacts
+          mv unlocker/build/output_binary artifacts/
+
+      - name: Create Release (Manual Deletion Possible)
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v4.2.7
+          name: Unlocker Build 4.2.7
+          artifacts: artifacts/output_binary
+          draft: true  # 作为草稿，仅自己可见
